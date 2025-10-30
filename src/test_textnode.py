@@ -31,6 +31,8 @@ class TestTextNode(unittest.TestCase):
         node1 = TextNode("Same text", TextType.CODE)
         node2 = TextNode("Same text", TextType.IMAGE)
         self.assertNotEqual(node1, node2)
+    
+
 
 if __name__ == "__main__":
     unittest.main()
