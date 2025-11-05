@@ -1,6 +1,7 @@
 import unittest
 
-from textnode import TextNode, TextType
+from textnode import TextNode, TextType, text_node_to_html
+from split_nodes_delimiter import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image
 
 
 class TestTextNode(unittest.TestCase):
@@ -24,7 +25,7 @@ class TestTextNode(unittest.TestCase):
             TextNode("Invalid text type", "not_a_text_type")
 
     def test_url_optional(self):
-        node = TextNode("No URL here", TextType.PLAIN)
+        node = TextNode("No URL here", TextType.TEXT)
         self.assertIsNone(node.url)
 
     def test_text_type_dif(self):
@@ -32,7 +33,83 @@ class TestTextNode(unittest.TestCase):
         node2 = TextNode("Same text", TextType.IMAGE)
         self.assertNotEqual(node1, node2)
     
+    def test_split_nodes_delimiter(self):
+        node = TextNode("This is text with a `code block` word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        expected_nodes = [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" word", TextType.TEXT),
+        ]
+        self.assertEqual(new_nodes, expected_nodes)
 
+    def test_split_nodes_delimiter_no_split(self):
+        node = TextNode("This is plain text", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        expected_nodes = [node]
+        self.assertEqual(new_nodes, expected_nodes)
+
+    def test_split_nodes_delimiter_odd_delimiters(self):
+        node = TextNode("This is `invalid markdown` syntax`", TextType.TEXT)
+        with self.assertRaises(Exception):
+            split_nodes_delimiter([node], "`", TextType.CODE)
+
+    def test_split_nodes_delimiter_bold(self):
+        node = TextNode("This is **bold** text", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
+        expected_nodes = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" text", TextType.TEXT),
+        ]
+        self.assertEqual(new_nodes, expected_nodes)
+
+    def test_split_nodes_delimiter_italic(self):
+        node = TextNode("This is *italic* text", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "*", TextType.ITALIC)
+        expected_nodes = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" text", TextType.TEXT),
+        ]
+        self.assertEqual(new_nodes, expected_nodes)
+
+    def test_extract_markdown_images(self):
+        text = "Here is an image ![alt text](http://example.com/image.png) in markdown."
+        images = extract_markdown_images(text)
+        expected = [("alt text", "http://example.com/image.png")]
+        self.assertEqual(images, expected)
+
+    def test_extract_markdown_links(self):
+        text = "Here is a link [example](http://example.com) in markdown."
+        links = extract_markdown_links(text)
+        expected = [("example", "http://example.com")]
+        self.assertEqual(links, expected)
+
+    def test_extract_markdown_lane_image(self):
+        text = "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)"
+        links = extract_markdown_links(text)
+        expected = [("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev")]
+        self.assertEqual(links, expected)
+
+    def test_split_images(self):
+        node = TextNode(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+            TextType.TEXT,
+    )
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+        [
+            TextNode("This is text with an ", TextType.TEXT),
+            TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+            TextNode(" and another ", TextType.TEXT),
+            TextNode(
+                "second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"
+            ),
+        ],
+        new_nodes,
+    )
+        
 
 if __name__ == "__main__":
     unittest.main()
