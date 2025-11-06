@@ -2,12 +2,6 @@ import re
 
 from textnode import TextNode, TextType, text_node_to_html
 
-def markdown_to_blocks(markdown):
-    unstripped_blocks = markdown.split("\n\n")
-    blocks = [block.strip() for block in unstripped_blocks]
-    return blocks
-
-
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
