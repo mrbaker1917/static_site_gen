@@ -32,20 +32,20 @@ class TextNode:
 def text_node_to_html(node):
     if node.text_type == TextType.TEXT:
         return LeafNode(None, node.text)
+    elif node.text_type == TextType.BOLD:
+        return LeafNode("b", node.text)
+    elif node.text_type == TextType.ITALIC:
+        return LeafNode("i", node.text)
+    elif node.text_type == TextType.CODE:
+        return LeafNode("code", node.text)
     elif node.text_type == TextType.LINK:
         if node.url is None:
             raise ValueError("URL must be provided for link text nodes")
-        return f'<a href="{node.url}">{node.text}</a>'
-    elif node.text_type == TextType.BOLD:
-        return f"<strong>{node.text}</strong>"
-    elif node.text_type == TextType.ITALIC:
-        return f"<em>{node.text}</em>"
-    elif node.text_type == TextType.CODE:
-        return f"<code>{node.text}</code>"
+        return LeafNode("a", node.text, {"href": node.url})
     elif node.text_type == TextType.IMAGE:
         if node.url is None:
             raise ValueError("URL must be provided for image text nodes")
-        return f'<img src="{node.url}" alt="{node.text}"/>'
+        return LeafNode("img", "", {"src": node.url, "alt": node.text})
     else:
         raise ValueError("Unsupported text type")
     
