@@ -110,7 +110,14 @@ def markdown_to_html_node(markdown):
             code_content = "\n".join(lines[1:-1]) + "\n"
             node = ParentNode("pre", [LeafNode("code", code_content)])
         elif block_type == BlockType.QUOTE:
-            quote_content = block[1:].strip()
+            lines = block.splitlines()
+            quote_content = ""
+            for line in lines:
+                if line.startswith(">"):
+                    quote_content += line[1:].lstrip() + "\n"
+                else:
+                    quote_content += line + "\n"
+            quote_content = quote_content.rstrip()
             text_nodes = text_to_textnodes(quote_content)
             html_children = [text_node_to_html(node) for node in text_nodes]
             if html_children:
