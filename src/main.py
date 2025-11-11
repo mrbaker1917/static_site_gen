@@ -50,8 +50,22 @@ def generate_page(from_path, template_path, dest_path):
     with open(index_path, 'w', encoding='utf-8') as f:
         f.write(final_html)
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    for item in os.listdir(dir_path_content):
+        item_path = os.path.join(dir_path_content, item)
+            
+        if os.path.isfile(item_path) and item.endswith('.md'):
+            # Generate page for markdown file
+            generate_page(item_path, template_path, dest_dir_path)
+        elif os.path.isdir(item_path):
+            # Recursively process subdirectories
+            dest_subdir = os.path.join(dest_dir_path, item)
+            generate_pages_recursive(item_path, template_path, dest_subdir)
+
+
 def main():
-    generate_page("content/index.md", "template.html", "static")
+
+    generate_pages_recursive("content", "template.html", "static")
     source_dir = "static"
     destination_dir = "public"
     copy_directory(source_dir, destination_dir)
