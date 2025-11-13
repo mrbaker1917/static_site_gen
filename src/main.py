@@ -5,6 +5,9 @@ from split_nodes_delimiter import split_nodes_delimiter, split_nodes_image, spli
 from textnode import text_node_to_html
 import os
 import shutil
+import sys
+
+basepath = sys.argv[0] if len(sys.argv) > 0 else "/"
 
 def copy_directory(src, dest):
     if os.path.exists(dest):
@@ -41,6 +44,7 @@ def generate_page(from_path, template_path, dest_path):
 
     title = extract_title(md)
     final_html = template.replace("{{ Title }}", title).replace("{{ Content }}", html_string)
+    # final_html = final_html.replace('href="/', f'href="{basepath}').replace('src="/', f'href="{basepath}')
     print(f"Final HTML: {final_html}")
     
     index_path = os.path.join(dest_path, "index.html")
@@ -67,7 +71,7 @@ def main():
 
     generate_pages_recursive("content", "template.html", "static")
     source_dir = "static"
-    destination_dir = "public"
+    destination_dir = "docs"
     copy_directory(source_dir, destination_dir)
     print(f"Copied contents from {source_dir} to {destination_dir}")
 main()
